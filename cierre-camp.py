@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import requests
+import base64
+from io import StringIO
+from datetime import datetime
 
 # Configuración de la página
 st.set_page_config(
@@ -42,8 +46,7 @@ def verificar_usuario(legajo_ingresado):
             df_usuarios = pd.read_csv(StringIO(content))
 
             # Limpieza exhaustiva de la columna de usuarios
-            df_usuarios['usuarios'] = df_usuarios['usuarios'].astype(str).str.replace(r'\r|\n', '',
-                                                                                      regex=True).str.strip().str.upper()
+            df_usuarios['usuarios'] = df_usuarios['usuarios'].astype(str).str.replace(r'\r|\n', '', regex=True).str.strip().str.upper()
             return legajo_limpio in df_usuarios['usuarios'].values
         else:
             st.error(f"⚠️ Error de lectura en GitHub (Status: {response.status_code}). Revisar Token.")
@@ -100,21 +103,17 @@ def registrar_evento_github(usuario, accion, cliente="N/A"):
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
     st.session_state.usuario = ""
-if "log_reporte_enviado" not in st.session_state:
-    st.session_state.log_reporte_enviado = False
 
 if not st.session_state.autenticado:
-    st.markdown("""<style>.main .block-container { max-width: 450px; padding-top: 5rem; }</style>""",
-                unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; color: #367c2b;'>Acceso al Reporte de Cierre de Campaña</h2>",
-                unsafe_allow_html=True)
+    st.markdown("""<style>.main .block-container { max-width: 450px; padding-top: 5rem; }</style>""", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #367c2b;'>Acceso al Reporte de Cierre de Campaña</h2>", unsafe_allow_html=True)
     legajo = st.text_input("Ingresá tu legajo:", placeholder="X000000")
 
     if st.button("Ingresar al Tablero", use_container_width=True):
         if verificar_usuario(legajo):
             st.session_state.autenticado = True
             st.session_state.usuario = legajo.upper()
-            registrar_evento_github(legajo, "Ingreso al Reporte Cosecha")
+            registrar_evento_github(legajo, "Ingreso al Tablero")
             st.rerun()
         else:
             st.error("❌ Usuario no autorizado. Verificá tu legajo.")
@@ -125,10 +124,10 @@ st.markdown(
     """<style>.metric-container { background-color: #ffffff; padding: 15px; border-radius:10px; border:1px solid #e6e9ef; text-align:center; margin-bottom:20px; }</style>""",
     unsafe_allow_html=True)
 
-# --- SIDEBAR (REORGANIZADO) ---
+# --- SIDEBAR ---
 st.sidebar.header("Configuración del Informe")
 
-# 1. Razón Social arriba de todo
+# Razón Social
 razon_social = st.sidebar.text_input("Razón Social del Cliente", placeholder="Ej: H&H Outfitters SA")
 st.sidebar.markdown("---")
 
@@ -183,23 +182,19 @@ if agregar_calidad:
 
     st.sidebar.markdown("**Asignación de Variedad**")
     v_totales = st.sidebar.number_input("Total de Mapas de Cosecha:", min_value=1, value=10, key="v_tot")
-    v_correctos = st.sidebar.number_input("Mapas con Variedad Cargada:", min_value=0, max_value=v_totales, value=8,
-                                          key="v_corr")
+    v_correctos = st.sidebar.number_input("Mapas con Variedad Cargada:", min_value=0, max_value=v_totales, value=8, key="v_corr")
 
     st.sidebar.markdown("**Mapas Cargados Correctamente**")
     m_totales = st.sidebar.number_input("Total de Mapas del Período:", min_value=1, value=12, key="m_tot")
-    m_correctos = st.sidebar.number_input("Mapas sin Errores/Superposiciones:", min_value=0, max_value=m_totales,
-                                          value=11, key="m_corr")
+    m_correctos = st.sidebar.number_input("Mapas sin Errores/Superposiciones:", min_value=0, max_value=m_totales, value=11, key="m_corr")
 
     st.sidebar.markdown("**Nombramiento de Campos**")
     c_totales = st.sidebar.number_input("Total de Campos Registrados:", min_value=1, value=15, key="c_tot")
-    c_correctos = st.sidebar.number_input("Campos con Nombre Correcto (sin duplicados):", min_value=0,
-                                          max_value=c_totales, value=12, key="c_corr")
+    c_correctos = st.sidebar.number_input("Campos con Nombre Correcto (sin duplicados):", min_value=0, max_value=c_totales, value=12, key="c_corr")
 
     st.sidebar.markdown("**Límites de Campos**")
     l_totales = st.sidebar.number_input("Total de Campos en Org:", min_value=1, value=15, key="l_tot")
-    l_correctos = st.sidebar.number_input("Campos con Límites Correctos/Activos:", min_value=0, max_value=l_totales,
-                                          value=9, key="l_corr")
+    l_correctos = st.sidebar.number_input("Campos con Límites Correctos/Activos:", min_value=0, max_value=l_totales, value=9, key="l_corr")
 
     calidad_datos = {
         'Asignación de Variedad': (v_correctos / v_totales) * 100,
@@ -285,9 +280,7 @@ with col_header1:
     else:
         st.subheader("Cliente: _Razón Social no especificada_")
 with col_header2:
-    st.markdown(
-        f"<p style='text-align: right; font-size: 1.2rem; font-weight: bold; color: #4caf50;'>📅 Período: {fecha_inicio} al {fecha_fin}</p>",
-        unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: right; font-size: 1.2rem; font-weight: bold; color: #4caf50;'>📅 Período: {fecha_inicio} al {fecha_fin}</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -343,8 +336,8 @@ if activar_performance:
                             textposition='inside'
                         ))
                         fig_cultivo.update_layout(height=140, margin=dict(l=10, r=10, t=10, b=10),
-                                                  xaxis=dict(showgrid=False, visible=False),
-                                                  yaxis=dict(autorange="reversed"))
+                                                 xaxis=dict(showgrid=False, visible=False),
+                                                 yaxis=dict(autorange="reversed"))
                         st.plotly_chart(fig_cultivo, use_container_width=True, key=f"cultivo_{maquina}")
                     else:
                         st.caption("No se registraron horas específicas de trilla.")
@@ -368,7 +361,6 @@ if activar_performance:
                         p_ralenti = (c_ralenti / c_total) * 100
                         p_transp = (c_transp / c_total) * 100
 
-                        # --- NUEVO: AHORA SÍ CON LAS ETIQUETAS DE TEXTO CORREGIDAS AQUÍ ---
                         fig_comb = go.Figure()
                         fig_comb.add_trace(go.Bar(
                             name='Trabajo', y=['Combustible'], x=[c_trabajo], orientation='h', marker_color='#2ca02c',
@@ -396,7 +388,7 @@ if activar_performance:
                     if not pd.isna(factor_carga) and factor_carga > 0:
                         if factor_carga <= 1.0: factor_carga *= 100
 
-                        es_nueva_s7 = "S7 " in modelo_maquina or modelo_maquina == "S7"
+                        es_nueva_s7 = "S7" in modelo_maquina
                         if es_nueva_s7:
                             color_term = "#28a745"
                             status_text = "✅ Carga Eficiente (Nueva Serie S7)"
@@ -421,22 +413,17 @@ if activar_performance:
                         ))
                         fig_gauge.update_layout(height=150, margin=dict(l=20, r=20, t=10, b=10))
                         st.plotly_chart(fig_gauge, use_container_width=True, key=f"gauge_{maquina}")
-                        st.markdown(
-                            f"<p style='text-align: center; font-weight: bold; color: {color_term};'>{status_text}</p>",
-                            unsafe_allow_html=True)
+                        st.markdown(f"<p style='text-align: center; font-weight: bold; color: {color_term};'>{status_text}</p>", unsafe_allow_html=True)
                     else:
                         st.caption("Sin datos de factor de carga.")
 
         st.markdown("---")
         st.header("2. Eficiencia de Operación y Tecnologías")
-
-        st.markdown("### Comparativa de Tecnología de Guiado por Equipo")
-
+        st.markdown("### Comparativa de Technology de Guiado por Equipo")
 
         def normalizar_porcentaje(val):
             if pd.isna(val): return 0.0
             return val * 100 if val <= 1.0 else val
-
 
         datos_guiado = []
         datos_cosechadora = []
@@ -464,10 +451,8 @@ if activar_performance:
             datos_cosechadora.append({'Máquina': m_name, 'Tecnología': 'Active Terrain Adjustment™', 'Porcentaje': ata})
             datos_cosechadora.append({'Máquina': m_name, 'Tecnología': 'ActiveYield™', 'Porcentaje': ay})
             datos_cosechadora.append({'Máquina': m_name, 'Tecnología': 'Harvest Smart', 'Porcentaje': hs})
-            datos_cosechadora.append(
-                {'Máquina': m_name, 'Tecnología': 'Ajustes de Cosecha / Auto Maintain', 'Porcentaje': tech_ajustes})
-            datos_cosechadora.append(
-                {'Máquina': m_name, 'Tecnología': 'Automatización Vel. Avance', 'Porcentaje': vel_avance})
+            datos_cosechadora.append({'Máquina': m_name, 'Tecnología': 'Ajustes de Cosecha / Auto Maintain', 'Porcentaje': tech_ajustes})
+            datos_cosechadora.append({'Máquina': m_name, 'Tecnología': 'Automatización Vel. Avance', 'Porcentaje': vel_avance})
 
         df_guiado_plot = pd.DataFrame(datos_guiado)
         df_cosechadora_plot = pd.DataFrame(datos_cosechadora)
@@ -537,14 +522,11 @@ if agregar_agronómico:
         if len(df_base_filtrada) == 0:
             st.warning(f"No hay registros con una superficie mayor o igual a {hectareas_filtro} ha.")
         else:
-            st.caption(
-                f"ℹ️ Mostrando datos agrupados de lotes con superficies iguales o mayores a **{hectareas_filtro} ha**.")
-
+            st.caption(f"ℹ️ Mostrando datos agrupados de lotes con superficies iguales o mayores a **{hectareas_filtro} ha**.")
             cultivos_disponibles = df_base_filtrada['Tipo de cultivo'].dropna().unique().tolist()
 
             for cultivo in cultivos_disponibles:
                 df_c = df_base_filtrada[df_base_filtrada['Tipo de cultivo'] == cultivo].copy()
-
                 st.markdown(f"## 🌾 Cultivo Analizado: {str(cultivo).upper()}")
 
                 # --- KPIs GLOBALES DEL CULTIVO ---
@@ -595,17 +577,15 @@ if agregar_agronómico:
                     )
                     fig_vel.add_hline(y=vel_general, line_dash="dash", line_color="#d32f2f")
                     fig_vel.update_traces(textposition='outside')
-                    fig_vel.update_layout(yaxis=dict(range=[0, max(
-                        df_vel_maq['Velocidad de trabajo'].max() if len(df_vel_maq) > 0 else 5, vel_general) * 1.3]),
+                    fig_vel.update_layout(yaxis=dict(range=[0, max(df_vel_maq['Factor de carga prom del motor En funcionamiento (%)'].max() if 'Factor de carga prom del motor En funcionamiento (%)' in df_vel_maq.columns else 5, vel_general) * 1.3]),
                                           height=300, margin=dict(t=40, b=10, l=10, r=10))
                     st.plotly_chart(fig_vel, use_container_width=True, key=f"vel_maq_{cultivo}")
 
-                # --- NUEVO: EFICIENCIA (L/ha) VS PRODUCTIVIDAD (tn/h) ---
+                # --- EFICIENCIA (L/ha) ---
                 st.markdown("#### 📊 Capacidad y Eficiencia de los Equipos")
                 col_c1, col_c2 = st.columns(2)
 
                 with col_c1:
-                    # Eficiencia del archivo de Cosecha (L/ha)
                     campo_comb = 'Consumo de combustible por unidad de superficie'
                     if campo_comb in df_c.columns:
                         df_comb_valido = df_c[df_c[campo_comb] > 0]
@@ -618,93 +598,34 @@ if agregar_agronómico:
                             title="Eficiencia de Combustible", color_discrete_sequence=['#2e7d32']
                         )
                         fig_lha.update_traces(textposition='outside')
-                        fig_lha.update_layout(yaxis=dict(
-                            range=[0, (df_litros_ha[campo_comb].max() if len(df_litros_ha) > 0 else 10) * 1.3]),
+                        fig_lha.update_layout(yaxis=dict(range=[0, df_litros_ha[campo_comb].max() * 1.3]),
                                               height=300, margin=dict(t=40, b=10, l=10, r=10))
                         st.plotly_chart(fig_lha, use_container_width=True, key=f"lha_{cultivo}")
-                    else:
-                        st.warning("Columna de consumo L/ha no disponible.")
 
                 with col_c2:
-                    # REEMPLAZO: CANTIDAD DE TONELADAS POR HORA QUE PROCESÓ CADA MÁQUINA
-                    col_prod = 'Productividad_th' if 'Productividad_th' in df_c.columns else 'Productividad'
+                    campo_prod = 'Productividad_th'
+                    if campo_prod in df_c.columns:
+                        df_prod_valido = df_c[df_c[campo_prod] > 0]
+                        df_prod_h = df_prod_valido.groupby('Nombre de máquina')[campo_prod].mean().reset_index()
 
-                    if col_prod in df_c.columns:
-                        df_prod_valida = df_c[df_c[col_prod] > 0]
-                        df_prod_maq = df_prod_valida.groupby('Nombre de máquina')[col_prod].mean().reset_index()
-                        prod_gral = df_prod_valida[col_prod].mean() if len(df_prod_valida) > 0 else 0
-
-                        fig_th = px.bar(
-                            df_prod_maq, x='Nombre de máquina', y=col_prod,
-                            text=df_prod_maq[col_prod].apply(lambda x: f"{x:.1f} t/h"),
-                            labels={col_prod: 'Productividad (t/h)', 'Nombre de máquina': 'Equipo'},
-                            title="Productividad Horaria de Trilla", color_discrete_sequence=['#ffde00']
+                        fig_prod = px.bar(
+                            df_prod_h, x='Nombre de máquina', y=campo_prod,
+                            text=df_prod_h[campo_prod].apply(lambda x: f"{x:.1f} t/h"),
+                            labels={campo_prod: 'Productividad (t/h)', 'Nombre de máquina': 'Equipo'},
+                            title="Capacidad de Cosecha", color_discrete_sequence=['#ffde00']
                         )
-                        if prod_gral > 0:
-                            fig_th.add_hline(y=prod_gral, line_dash="dash", line_color="#1b5e20")
-                        fig_th.update_traces(textposition='outside')
-                        fig_th.update_layout(yaxis=dict(range=[0, max(
-                            df_prod_maq[col_prod].max() if len(df_prod_maq) > 0 else 10, prod_gral) * 1.3]), height=300,
-                                             margin=dict(t=40, b=10, l=10, r=10))
-                        st.plotly_chart(fig_th, use_container_width=True, key=f"th_{cultivo}")
-                    else:
-                        st.warning("Columna de Productividad (t/h) no encontrada en el archivo.")
+                        fig_prod.update_traces(textposition='outside')
+                        fig_prod.update_layout(yaxis=dict(range=[0, df_prod_h[campo_prod].max() * 1.3]),
+                                               height=300, margin=dict(t=40, b=10, l=10, r=10))
+                        st.plotly_chart(fig_prod, use_container_width=True, key=f"prod_{cultivo}")
 
-                # --- 2. SERIE HISTÓRICA DE COSECHA ---
-                st.markdown("#### 📈 Evolución y Ritmo de Cosecha")
-                if 'Fecha_Formateada' in df_c.columns and df_c['Fecha_Formateada'].notna().any():
-                    df_dia = df_c.groupby(df_c['Fecha_Formateada'].dt.date)['Superficie cosechada'].sum().reset_index()
-                    df_dia.columns = ['Fecha_Dia', 'Superficie cosechada']
-                    df_dia = df_dia.sort_values('Fecha_Dia')
-                    df_dia['Acumulado'] = df_dia['Superficie cosechada'].cumsum()
+# --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
+st.markdown("---")
+st.subheader("📥 Acciones del Reporte")
 
-                    fig_timeline = go.Figure()
-                    fig_timeline.add_trace(go.Bar(
-                        x=df_dia['Fecha_Dia'], y=df_dia['Superficie cosechada'],
-                        name='Hectáreas Diarias', marker_color='#a5d6a7', yaxis='y1'
-                    ))
-                    fig_timeline.add_trace(go.Scatter(
-                        x=df_dia['Fecha_Dia'], y=df_dia['Acumulado'],
-                        name='Hectáreas Acumuladas', line=dict(color='#1b5e20', width=3), mode='lines+markers',
-                        yaxis='y2'
-                    ))
-                    fig_timeline.update_layout(
-                        height=350, legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center"),
-                        xaxis=dict(type='category'),
-                        yaxis=dict(title="Superficie Diaria (ha)", side="left", showgrid=True),
-                        yaxis2=dict(title="Superficie Acumulada (ha)", side="right", overlaying="y", showgrid=False),
-                        margin=dict(t=30, b=20)
-                    )
-                    st.plotly_chart(fig_timeline, use_container_width=True, key=f"timeline_{cultivo}")
-                else:
-                    st.info("Sin columna de fecha válida para la línea de tiempo.")
-
-                # --- 3. UN SOLO GRÁFICO DE TORTA DE VARIEDADES ---
-                st.markdown("#### 📊 Distribución de Superficie por Variedad / Híbrido")
-                df_pie_var = df_c.groupby('Variedades')['Superficie cosechada'].sum().reset_index()
-
-                fig_pie_v = px.pie(
-                    df_pie_var, values='Superficie cosechada', names='Variedades',
-                    color_discrete_sequence=px.colors.qualitative.Prism
-                )
-                fig_pie_v.update_traces(textposition='inside', textinfo='percent+label')
-                fig_pie_v.update_layout(height=350, margin=dict(t=20, b=20, l=20, r=20))
-                st.plotly_chart(fig_pie_v, use_container_width=True, key=f"pie_var_{cultivo}")
-
-                # --- 4. BOXPLOT DE RENDIMIENTO POR VARIEDAD ---
-                st.markdown("#### 📊 Rendimiento por Variedad (Análisis de Dispersión)")
-                if len(df_rinde_valido_c) > 0:
-                    fig_box = px.box(
-                        df_rinde_valido_c, x='Variedades', y='Rendimiento en seco',
-                        labels={'Rendimiento en seco': 'Rendimiento (t/ha)', 'Variedades': 'Variedad / Híbrido'},
-                        color_discrete_sequence=['#4caf50']
-                    )
-                    fig_box.update_layout(height=380, boxmode='group', margin=dict(t=20, b=20))
-                    st.plotly_chart(fig_box, use_container_width=True, key=f"box_{cultivo}")
-                else:
-                    st.info("Sin datos de rendimiento para el Boxplot.")
-
-                st.markdown("---")  # Separador estético entre cultivos
-
-    else:
-        st.info("Habilitaste la sección agronómica. Por favor, cargá el archivo de Cosecha en el panel lateral.")
+# Botón para simular la generación de PDF y disparar el log automático
+if st.button("Generar Reporte PDF", use_container_width=True):
+    # Aquí irá tu lógica para renderizar/descargar el PDF, pero el registro en GitHub ya se ejecuta de inmediato:
+    cliente_informe = razon_social.strip() if razon_social else "No especificado"
+    registrar_evento_github(st.session_state.usuario, "Exportó Reporte a PDF", cliente=cliente_informe)
+    st.success(f"🎉 ¡Reporte registrado con éxito para {cliente_informe}!")
