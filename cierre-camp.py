@@ -577,15 +577,17 @@ if agregar_agronómico:
                     )
                     fig_vel.add_hline(y=vel_general, line_dash="dash", line_color="#d32f2f")
                     fig_vel.update_traces(textposition='outside')
-                    fig_vel.update_layout(yaxis=dict(range=[0, max(df_vel_maq['Factor de carga prom del motor En funcionamiento (%)'].max() if 'Factor de carga prom del motor En funcionamiento (%)' in df_vel_maq.columns else 5, vel_general) * 1.3]),
+                    fig_vel.update_layout(yaxis=dict(range=[0, max(
+                        df_vel_maq['Velocidad de trabajo'].max() if len(df_vel_maq) > 0 else 5, vel_general) * 1.3]),
                                           height=300, margin=dict(t=40, b=10, l=10, r=10))
                     st.plotly_chart(fig_vel, use_container_width=True, key=f"vel_maq_{cultivo}")
 
-                # --- EFICIENCIA (L/ha) ---
+                # --- NUEVO: EFICIENCIA (L/ha) VS PRODUCTIVIDAD (tn/h) ---
                 st.markdown("#### 📊 Capacidad y Eficiencia de los Equipos")
                 col_c1, col_c2 = st.columns(2)
 
                 with col_c1:
+                    # Eficiencia del archivo de Cosecha (L/ha)
                     campo_comb = 'Consumo de combustible por unidad de superficie'
                     if campo_comb in df_c.columns:
                         df_comb_valido = df_c[df_c[campo_comb] > 0]
@@ -598,26 +600,93 @@ if agregar_agronómico:
                             title="Eficiencia de Combustible", color_discrete_sequence=['#2e7d32']
                         )
                         fig_lha.update_traces(textposition='outside')
-                        fig_lha.update_layout(yaxis=dict(range=[0, df_litros_ha[campo_comb].max() * 1.3]),
+                        fig_lha.update_layout(yaxis=dict(
+                            range=[0, (df_litros_ha[campo_comb].max() if len(df_litros_ha) > 0 else 10) * 1.3]),
                                               height=300, margin=dict(t=40, b=10, l=10, r=10))
                         st.plotly_chart(fig_lha, use_container_width=True, key=f"lha_{cultivo}")
+                    else:
+                        st.warning("Columna de consumo L/ha no disponible.")
 
                 with col_c2:
-                    campo_prod = 'Productividad_th'
-                    if campo_prod in df_c.columns:
-                        df_prod_valido = df_c[df_c[campo_prod] > 0]
-                        df_prod_h = df_prod_valido.groupby('Nombre de máquina')[campo_prod].mean().reset_index()
+                    # REEMPLAZO: CANTIDAD DE TONELADAS POR HORA QUE PROCESÓ CADA MÁQUINA
+                    col_prod = 'Productividad_th' if 'Productividad_th' in df_c.columns else 'Productividad'
 
-                        fig_prod = px.bar(
-                            df_prod_h, x='Nombre de máquina', y=campo_prod,
-                            text=df_prod_h[campo_prod].apply(lambda x: f"{x:.1f} t/h"),
-                            labels={campo_prod: 'Productividad (t/h)', 'Nombre de máquina': 'Equipo'},
-                            title="Capacidad de Cosecha", color_discrete_sequence=['#ffde00']
+                    if col_prod in df_c.columns:
+                        df_prod_valida = df_c[df_c[col_prod] > 0]
+                        df_prod_maq = df_prod_valida.groupby('Nombre de máquina')[col_prod].mean().reset_index()
+                        prod_gral = df_prod_valida[col_prod].mean() if len(df_prod_valida) > 0 else 0
+
+                        fig_th = px.bar(
+                            df_prod_maq, x='Nombre de máquina', y=col_prod,
+                            text=df_prod_maq[col_prod].apply(lambda x: f"{x:.1f} t/h"),
+                            labels={col_prod: 'Productividad (t/h)', 'Nombre de máquina': 'Equipo'},
+                            title="Productividad Horaria de Trilla", color_discrete_sequence=['#ffde00']
                         )
-                        fig_prod.update_traces(textposition='outside')
-                        fig_prod.update_layout(yaxis=dict(range=[0, df_prod_h[campo_prod].max() * 1.3]),
-                                               height=300, margin=dict(t=40, b=10, l=10, r=10))
-                        st.plotly_chart(fig_prod, use_container_width=True, key=f"prod_{cultivo}")
+                        if prod_gral > 0:
+                            fig_th.add_hline(y=prod_gral, line_dash="dash", line_color="#1b5e20")
+                        fig_th.update_traces(textposition='outside')
+                        fig_th.update_layout(yaxis=dict(range=[0, max(
+                            df_prod_maq[col_prod].max() if len(df_prod_maq) > 0 else 10, prod_gral) * 1.3]), height=300,
+                                             margin=dict(t=40, b=10, l=10, r=10))
+                        st.plotly_chart(fig_th, use_container_width=True, key=f"th_{cultivo}")
+                    else:
+                        st.warning("Columna de Productividad (t/h) no encontrada en el archivo.")
+
+                # --- 2. SERIE HISTÓRICA DE COSECHA ---
+                st.markdown("#### 📈 Evolución y Ritmo de Cosecha")
+                if 'Fecha_Formateada' in df_c.columns and df_c['Fecha_Formateada'].notna().any():
+                    df_dia = df_c.groupby(df_c['Fecha_Formateada'].dt.date)['Superficie cosechada'].sum().reset_index()
+                    df_dia.columns = ['Fecha_Dia', 'Superficie cosechada']
+                    df_dia = df_dia.sort_values('Fecha_Dia')
+                    df_dia['Acumulado'] = df_dia['Superficie cosechada'].cumsum()
+
+                    fig_timeline = go.Figure()
+                    fig_timeline.add_trace(go.Bar(
+                        x=df_dia['Fecha_Dia'], y=df_dia['Superficie cosechada'],
+                        name='Hectáreas Diarias', marker_color='#a5d6a7', yaxis='y1'
+                    ))
+                    fig_timeline.add_trace(go.Scatter(
+                        x=df_dia['Fecha_Dia'], y=df_dia['Acumulado'],
+                        name='Hectáreas Acumuladas', line=dict(color='#1b5e20', width=3), mode='lines+markers',
+                        yaxis='y2'
+                    ))
+                    fig_timeline.update_layout(
+                        height=350, legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center"),
+                        xaxis=dict(type='category'),
+                        yaxis=dict(title="Superficie Diaria (ha)", side="left", showgrid=True),
+                        yaxis2=dict(title="Superficie Acumulada (ha)", side="right", overlaying="y", showgrid=False),
+                        margin=dict(t=30, b=20)
+                    )
+                    st.plotly_chart(fig_timeline, use_container_width=True, key=f"timeline_{cultivo}")
+                else:
+                    st.info("Sin columna de fecha válida para la línea de tiempo.")
+
+                # --- 3. UN SOLO GRÁFICO DE TORTA DE VARIEDADES ---
+                st.markdown("#### 📊 Distribución de Superficie por Variedad / Híbrido")
+                df_pie_var = df_c.groupby('Variedades')['Superficie cosechada'].sum().reset_index()
+
+                fig_pie_v = px.pie(
+                    df_pie_var, values='Superficie cosechada', names='Variedades',
+                    color_discrete_sequence=px.colors.qualitative.Prism
+                )
+                fig_pie_v.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie_v.update_layout(height=350, margin=dict(t=20, b=20, l=20, r=20))
+                st.plotly_chart(fig_pie_v, use_container_width=True, key=f"pie_var_{cultivo}")
+
+                # --- 4. BOXPLOT DE RENDIMIENTO POR VARIEDAD ---
+                st.markdown("#### 📊 Rendimiento por Variedad (Análisis de Dispersión)")
+                if len(df_rinde_valido_c) > 0:
+                    fig_box = px.box(
+                        df_rinde_valido_c, x='Variedades', y='Rendimiento en seco',
+                        labels={'Rendimiento en seco': 'Rendimiento (t/ha)', 'Variedades': 'Variedad / Híbrido'},
+                        color_discrete_sequence=['#4caf50']
+                    )
+                    fig_box.update_layout(height=380, boxmode='group', margin=dict(t=20, b=20))
+                    st.plotly_chart(fig_box, use_container_width=True, key=f"box_{cultivo}")
+                else:
+                    st.info("Sin datos de rendimiento para el Boxplot.")
+
+                st.markdown("---")  # Separador estético entre cultivos
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
 st.markdown("---")
