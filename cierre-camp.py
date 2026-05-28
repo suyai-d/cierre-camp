@@ -689,7 +689,6 @@ if agregar_agronómico:
                 st.markdown("---")  # Separador estético entre cultivos
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
-st.markdown("---")
 st.subheader("📥 Acciones del Reporte")
 
 # Botón para simular la generación de PDF y disparar el log automático
