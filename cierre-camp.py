@@ -106,7 +106,7 @@ if "log_reporte_enviado" not in st.session_state:
 if not st.session_state.autenticado:
     st.markdown("""<style>.main .block-container { max-width: 450px; padding-top: 5rem; }</style>""",
                 unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; color: #367c2b;'>Acceso al Reporte de Cosecha</h2>",
+    st.markdown("<h2 style='text-align: center; color: #367c2b;'>Acceso al Reporte de Cierre de Campaña</h2>",
                 unsafe_allow_html=True)
     legajo = st.text_input("Ingresá tu legajo:", placeholder="X000000")
 
