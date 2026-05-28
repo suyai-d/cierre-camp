@@ -17,6 +17,114 @@ with col_logo_izq:
 with col_logo_der:
     st.image("JD.png", width=200)
 
+# --- CONFIGURACIÓN DE GITHUB API ---
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+REPO_OWNER = "suyai-d"
+REPO_NAME = "reportes-seguridad-db"
+BRANCH = "main"
+
+
+# --- FUNCIONES DE CONTROL DE ACCESO Y LOGS ---
+def verificar_usuario(legajo_ingresado):
+    """Intenta leer desde GitHub de forma estricta para alertar errores."""
+    url_api_usuarios = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/usuarios_permitidos.csv"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    legajo_limpio = legajo_ingresado.strip().upper()
+
+    try:
+        response = requests.get(url_api_usuarios, headers=headers, timeout=5)
+        if response.status_code == 200:
+            file_data = response.json()
+            content = base64.b64decode(file_data['content']).decode('utf-8')
+            df_usuarios = pd.read_csv(StringIO(content))
+
+            # Limpieza exhaustiva de la columna de usuarios
+            df_usuarios['usuarios'] = df_usuarios['usuarios'].astype(str).str.replace(r'\r|\n', '',
+                                                                                      regex=True).str.strip().str.upper()
+            return legajo_limpio in df_usuarios['usuarios'].values
+        else:
+            st.error(f"⚠️ Error de lectura en GitHub (Status: {response.status_code}). Revisar Token.")
+            return False
+    except Exception as e:
+        st.error(f"💥 Error de conexión: {str(e)}")
+        return False
+
+
+def registrar_evento_github(usuario, accion, cliente="N/A"):
+    """Intenta escribir en GitHub y muestra una alerta en la web si falla."""
+    url_registro = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/registro_actividad.csv"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    nueva_fila = {
+        "fecha_hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "usuario": usuario.upper(),
+        "accion": accion,
+        "cliente": cliente if cliente else "No especificado"
+    }
+
+    try:
+        res = requests.get(url_registro, headers=headers, timeout=5)
+        if res.status_code == 200:
+            file_data = res.json()
+            sha = file_data['sha']
+            content = base64.b64decode(file_data['content']).decode('utf-8')
+            df_log = pd.read_csv(StringIO(content))
+
+            # Unimos el nuevo evento
+            df_log = pd.concat([df_log, pd.DataFrame([nueva_fila])], ignore_index=True)
+
+            csv_actualizado = df_log.to_csv(index=False)
+            content_encoded = base64.b64encode(csv_actualizado.encode('utf-8')).decode('utf-8')
+
+            payload = {
+                "message": f"Log: {usuario} - {accion}",
+                "content": content_encoded,
+                "branch": BRANCH,
+                "sha": sha
+            }
+
+            requests.put(url_registro, json=payload, headers=headers, timeout=5)
+        else:
+            st.error(f"❌ No se pudo encontrar el archivo de registros en GitHub. Código: {res.status_code}")
+    except Exception as e:
+        st.error(f"💥 Error crítico al intentar escribir log: {str(e)}")
+
+
+# --- FLUJO DE AUTENTICACIÓN ---
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+    st.session_state.usuario = ""
+if "log_reporte_enviado" not in st.session_state:
+    st.session_state.log_reporte_enviado = False
+
+if not st.session_state.autenticado:
+    st.markdown("""<style>.main .block-container { max-width: 450px; padding-top: 5rem; }</style>""",
+                unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #367c2b;'>Acceso al Reporte de Cosecha</h2>",
+                unsafe_allow_html=True)
+    legajo = st.text_input("Ingresá tu legajo:", placeholder="X000000")
+
+    if st.button("Ingresar al Tablero", use_container_width=True):
+        if verificar_usuario(legajo):
+            st.session_state.autenticado = True
+            st.session_state.usuario = legajo.upper()
+            registrar_evento_github(legajo, "Ingreso al Reporte Cosecha")
+            st.rerun()
+        else:
+            st.error("❌ Usuario no autorizado. Verificá tu legajo.")
+    st.stop()  # Detiene la carga de la página aquí si no está autenticado
+
+# --- INTERFAZ DEL TABLERO AUTORIZADO ---
+st.markdown(
+    """<style>.metric-container { background-color: #ffffff; padding: 15px; border-radius:10px; border:1px solid #e6e9ef; text-align:center; margin-bottom:20px; }</style>""",
+    unsafe_allow_html=True)
+
 # --- SIDEBAR (REORGANIZADO) ---
 st.sidebar.header("Configuración del Informe")
 
