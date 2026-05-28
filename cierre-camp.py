@@ -113,7 +113,7 @@ if not st.session_state.autenticado:
         if verificar_usuario(legajo):
             st.session_state.autenticado = True
             st.session_state.usuario = legajo.upper()
-            registrar_evento_github(legajo, "Ingreso al Tablero")
+            registrar_evento_github(legajo, "Ingreso al Cierre de Cosecha")
             st.rerun()
         else:
             st.error("❌ Usuario no autorizado. Verificá tu legajo.")
@@ -391,7 +391,7 @@ if activar_performance:
                         es_nueva_s7 = "S7" in modelo_maquina
                         if es_nueva_s7:
                             color_term = "#28a745"
-                            status_text = "✅ Carga Eficiente (Nueva Serie S7)"
+                            status_text = "✅ Carga Eficiente"
                             steps_config = [{'range': [0, 100], 'color': "#c8e6c9"}]
                         else:
                             if factor_carga >= 90:
@@ -419,7 +419,7 @@ if activar_performance:
 
         st.markdown("---")
         st.header("2. Eficiencia de Operación y Tecnologías")
-        st.markdown("### Comparativa de Technology de Guiado por Equipo")
+        st.markdown("### Comparativa de Tecnología de Guiado por Equipo")
 
         def normalizar_porcentaje(val):
             if pd.isna(val): return 0.0
@@ -465,7 +465,7 @@ if activar_performance:
         st.plotly_chart(fig_guiado, use_container_width=True)
 
         st.markdown("---")
-        st.markdown("### Comparativa de Automatización de Cosechadora por Equipo")
+        st.markdown("### Comparativa de Tecnología de Csecha por Equipo")
 
         fig_cosechadora = px.bar(df_cosechadora_plot, x='Máquina', y='Porcentaje', color='Tecnología', barmode='group',
                                  text=df_cosechadora_plot['Porcentaje'].apply(lambda x: f"{x:.1f}%" if x > 0 else ""),
@@ -689,11 +689,10 @@ if agregar_agronómico:
                 st.markdown("---")  # Separador estético entre cultivos
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
-st.subheader("📥 Acciones del Reporte")
 
 # Botón para simular la generación de PDF y disparar el log automático
 if st.button("Generar Reporte PDF", use_container_width=True):
     # Aquí irá tu lógica para renderizar/descargar el PDF, pero el registro en GitHub ya se ejecuta de inmediato:
     cliente_informe = razon_social.strip() if razon_social else "No especificado"
-    registrar_evento_github(st.session_state.usuario, "Exportó Reporte a PDF", cliente=cliente_informe)
+    registrar_evento_github(st.session_state.usuario, "Exportó Reporte Cierre Cosecha a PDF", cliente=cliente_informe)
     st.success(f"🎉 ¡Reporte registrado con éxito para {cliente_informe}!")
