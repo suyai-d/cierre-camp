@@ -465,7 +465,7 @@ if activar_performance:
         st.plotly_chart(fig_guiado, use_container_width=True)
 
         st.markdown("---")
-        st.markdown("### Comparativa de Tecnología de Csecha por Equipo")
+        st.markdown("### Comparativa de Tecnología de Cosecha por Equipo")
 
         fig_cosechadora = px.bar(df_cosechadora_plot, x='Máquina', y='Porcentaje', color='Tecnología', barmode='group',
                                  text=df_cosechadora_plot['Porcentaje'].apply(lambda x: f"{x:.1f}%" if x > 0 else ""),
