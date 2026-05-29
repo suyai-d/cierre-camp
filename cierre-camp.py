@@ -263,6 +263,9 @@ if agregar_agronómico:
             st.sidebar.error(f"Error al cargar el archivo agronómico: {e}")
 
 # --- CUERPO DEL INFORME ---
+# Portada de inicio full-width para la descarga en PDF
+st.image("portada.jpg", use_container_width=True)
+
 st.title("Cierre de Campaña")
 
 if df is not None and len(df) > 0 and activar_performance:
@@ -361,23 +364,23 @@ if activar_performance:
                         p_ralenti = (c_ralenti / c_total) * 100
                         p_transp = (c_transp / c_total) * 100
 
+                        # Armamos los nombres con los datos integrados para la leyenda
+                        label_trabajo = f"Trabajo: {c_trabajo:,.0f} L ({p_trabajo:.1f}%)" if c_trabajo > 0 else "Trabajo"
+                        label_ralenti = f"Ralentí: {c_ralenti:,.0f} L ({p_ralenti:.1f}%)" if c_ralenti > 0 else "Ralentí"
+                        label_transp = f"Transporte: {c_transp:,.0f} L ({p_transp:.1f}%)" if c_transp > 0 else "Transporte"
+
                         fig_comb = go.Figure()
                         fig_comb.add_trace(go.Bar(
-                            name='Trabajo', y=['Combustible'], x=[c_trabajo], orientation='h', marker_color='#2ca02c',
-                            text=[f"{c_trabajo:,.0f} L ({p_trabajo:.1f}%)" if c_trabajo > 0 else ""],
-                            textposition='inside'
+                            name=label_trabajo, y=['Combustible'], x=[c_trabajo], orientation='h', marker_color='#2ca02c'
                         ))
                         fig_comb.add_trace(go.Bar(
-                            name='Ralentí', y=['Combustible'], x=[c_ralenti], orientation='h', marker_color='#ff7f0e',
-                            text=[f"{c_ralenti:,.0f} L ({p_ralenti:.1f}%)" if c_ralenti > 0 else ""],
-                            textposition='inside'
+                            name=label_ralenti, y=['Combustible'], x=[c_ralenti], orientation='h', marker_color='#ff7f0e'
                         ))
                         fig_comb.add_trace(go.Bar(
-                            name='Transporte', y=['Combustible'], x=[c_transp], orientation='h', marker_color='#7f7f7f',
-                            text=[f"{c_transp:,.0f} L ({p_transp:.1f}%)" if c_transp > 0 else ""], textposition='inside'
+                            name=label_transp, y=['Combustible'], x=[c_transp], orientation='h', marker_color='#7f7f7f'
                         ))
                         fig_comb.update_layout(barmode='stack', height=180, margin=dict(l=10, r=10, t=10, b=10),
-                                               legend=dict(orientation="h", y=1.2))
+                                               legend=dict(orientation="h", y=1.3))
                         st.plotly_chart(fig_comb, use_container_width=True, key=f"comb_{maquina}")
                     else:
                         st.caption("Sin datos de combustible.")
@@ -609,90 +612,4 @@ if agregar_agronómico:
 
                 with col_c2:
                     # REEMPLAZO: CANTIDAD DE TONELADAS POR HORA QUE PROCESÓ CADA MÁQUINA
-                    col_prod = 'Productividad_th' if 'Productividad_th' in df_c.columns else 'Productividad'
-
-                    if col_prod in df_c.columns:
-                        df_prod_valida = df_c[df_c[col_prod] > 0]
-                        df_prod_maq = df_prod_valida.groupby('Nombre de máquina')[col_prod].mean().reset_index()
-                        prod_gral = df_prod_valida[col_prod].mean() if len(df_prod_valida) > 0 else 0
-
-                        fig_th = px.bar(
-                            df_prod_maq, x='Nombre de máquina', y=col_prod,
-                            text=df_prod_maq[col_prod].apply(lambda x: f"{x:.1f} t/h"),
-                            labels={col_prod: 'Productividad (t/h)', 'Nombre de máquina': 'Equipo'},
-                            title="Productividad Horaria de Trilla", color_discrete_sequence=['#ffde00']
-                        )
-                        if prod_gral > 0:
-                            fig_th.add_hline(y=prod_gral, line_dash="dash", line_color="#1b5e20")
-                        fig_th.update_traces(textposition='outside')
-                        fig_th.update_layout(yaxis=dict(range=[0, max(
-                            df_prod_maq[col_prod].max() if len(df_prod_maq) > 0 else 10, prod_gral) * 1.3]), height=300,
-                                             margin=dict(t=40, b=10, l=10, r=10))
-                        st.plotly_chart(fig_th, use_container_width=True, key=f"th_{cultivo}")
-                    else:
-                        st.warning("Columna de Productividad (t/h) no encontrada en el archivo.")
-
-                # --- 2. SERIE HISTÓRICA DE COSECHA ---
-                st.markdown("#### 📈 Evolución y Ritmo de Cosecha")
-                if 'Fecha_Formateada' in df_c.columns and df_c['Fecha_Formateada'].notna().any():
-                    df_dia = df_c.groupby(df_c['Fecha_Formateada'].dt.date)['Superficie cosechada'].sum().reset_index()
-                    df_dia.columns = ['Fecha_Dia', 'Superficie cosechada']
-                    df_dia = df_dia.sort_values('Fecha_Dia')
-                    df_dia['Acumulado'] = df_dia['Superficie cosechada'].cumsum()
-
-                    fig_timeline = go.Figure()
-                    fig_timeline.add_trace(go.Bar(
-                        x=df_dia['Fecha_Dia'], y=df_dia['Superficie cosechada'],
-                        name='Hectáreas Diarias', marker_color='#a5d6a7', yaxis='y1'
-                    ))
-                    fig_timeline.add_trace(go.Scatter(
-                        x=df_dia['Fecha_Dia'], y=df_dia['Acumulado'],
-                        name='Hectáreas Acumuladas', line=dict(color='#1b5e20', width=3), mode='lines+markers',
-                        yaxis='y2'
-                    ))
-                    fig_timeline.update_layout(
-                        height=350, legend=dict(orientation="h", y=1.15, x=0.5, xanchor="center"),
-                        xaxis=dict(type='category'),
-                        yaxis=dict(title="Superficie Diaria (ha)", side="left", showgrid=True),
-                        yaxis2=dict(title="Superficie Acumulada (ha)", side="right", overlaying="y", showgrid=False),
-                        margin=dict(t=30, b=20)
-                    )
-                    st.plotly_chart(fig_timeline, use_container_width=True, key=f"timeline_{cultivo}")
-                else:
-                    st.info("Sin columna de fecha válida para la línea de tiempo.")
-
-                # --- 3. UN SOLO GRÁFICO DE TORTA DE VARIEDADES ---
-                st.markdown("#### 📊 Distribución de Superficie por Variedad / Híbrido")
-                df_pie_var = df_c.groupby('Variedades')['Superficie cosechada'].sum().reset_index()
-
-                fig_pie_v = px.pie(
-                    df_pie_var, values='Superficie cosechada', names='Variedades',
-                    color_discrete_sequence=px.colors.qualitative.Prism
-                )
-                fig_pie_v.update_traces(textposition='inside', textinfo='percent+label')
-                fig_pie_v.update_layout(height=350, margin=dict(t=20, b=20, l=20, r=20))
-                st.plotly_chart(fig_pie_v, use_container_width=True, key=f"pie_var_{cultivo}")
-
-                # --- 4. BOXPLOT DE RENDIMIENTO POR VARIEDAD ---
-                st.markdown("#### 📊 Rendimiento por Variedad (Análisis de Dispersión)")
-                if len(df_rinde_valido_c) > 0:
-                    fig_box = px.box(
-                        df_rinde_valido_c, x='Variedades', y='Rendimiento en seco',
-                        labels={'Rendimiento en seco': 'Rendimiento (t/ha)', 'Variedades': 'Variedad / Híbrido'},
-                        color_discrete_sequence=['#4caf50']
-                    )
-                    fig_box.update_layout(height=380, boxmode='group', margin=dict(t=20, b=20))
-                    st.plotly_chart(fig_box, use_container_width=True, key=f"box_{cultivo}")
-                else:
-                    st.info("Sin datos de rendimiento para el Boxplot.")
-
-                st.markdown("---")  # Separador estético entre cultivos
-
-# --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
-
-# Botón para simular la generación de PDF y disparar el log automático
-if st.button("Generar Reporte PDF", use_container_width=True):
-    # Aquí irá tu lógica para renderizar/descargar el PDF, pero el registro en GitHub ya se ejecuta de inmediato:
-    cliente_informe = razon_social.strip() if razon_social else "No especificado"
-    registrar_evento_github(st.session_state.usuario, "Exportó Reporte Cierre Cosecha a PDF", cliente=cliente_informe)
-    st.success(f"🎉 ¡Reporte registrado con éxito para {cliente_informe}!")
+                    st.caption("Capacidad de procesamiento (t/h) disponible en versión completa.")
