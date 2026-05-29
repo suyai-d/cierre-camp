@@ -180,7 +180,7 @@ calidad_datos = {}
 if agregar_calidad:
     st.sidebar.caption("Completar totales vs. datos correctos:")
 
-st.sidebar.markdown("**Asignación de Variedad**")
+    st.sidebar.markdown("**Asignación de Variedad**")
     v_totales = st.sidebar.number_input("Total de Mapas de Cosecha:", min_value=1, value=10, key="v_tot")
     # Protegemos el value para que no supere a v_totales
     v_correctos = st.sidebar.number_input("Mapas con Variedad Cargada:", min_value=0, max_value=v_totales, value=min(8, v_totales), key="v_corr")
