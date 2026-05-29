@@ -391,7 +391,7 @@ if activar_performance:
                     if not pd.isna(factor_carga) and factor_carga > 0:
                         if factor_carga <= 1.0: factor_carga *= 100
 
-                        es_nueva_s7 = "S7" in modelo_maquina
+                        es_nueva_s7 = "S7 " in modelo_maquina
                         if es_nueva_s7:
                             color_term = "#28a745"
                             status_text = "✅ Carga Eficiente"
