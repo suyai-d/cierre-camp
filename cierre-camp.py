@@ -180,21 +180,25 @@ calidad_datos = {}
 if agregar_calidad:
     st.sidebar.caption("Completar totales vs. datos correctos:")
 
-    st.sidebar.markdown("**Asignación de Variedad**")
+st.sidebar.markdown("**Asignación de Variedad**")
     v_totales = st.sidebar.number_input("Total de Mapas de Cosecha:", min_value=1, value=10, key="v_tot")
-    v_correctos = st.sidebar.number_input("Mapas con Variedad Cargada:", min_value=0, max_value=v_totales, value=8, key="v_corr")
+    # Protegemos el value para que no supere a v_totales
+    v_correctos = st.sidebar.number_input("Mapas con Variedad Cargada:", min_value=0, max_value=v_totales, value=min(8, v_totales), key="v_corr")
 
     st.sidebar.markdown("**Mapas Cargados Correctamente**")
     m_totales = st.sidebar.number_input("Total de Mapas del Período:", min_value=1, value=12, key="m_tot")
-    m_correctos = st.sidebar.number_input("Mapas sin Errores/Superposiciones:", min_value=0, max_value=m_totales, value=11, key="m_corr")
+    # Protegemos el value para que no supere a m_totales (evita el error que te apareció)
+    m_correctos = st.sidebar.number_input("Mapas sin Errores/Superposiciones:", min_value=0, max_value=m_totales, value=min(11, m_totales), key="m_corr")
 
     st.sidebar.markdown("**Nombramiento de Campos**")
     c_totales = st.sidebar.number_input("Total de Campos Registrados:", min_value=1, value=15, key="c_tot")
-    c_correctos = st.sidebar.number_input("Campos con Nombre Correcto (sin duplicados):", min_value=0, max_value=c_totales, value=12, key="c_corr")
+    # Protegemos el value para que no supere a c_totales
+    c_correctos = st.sidebar.number_input("Campos con Nombre Correcto (sin duplicados):", min_value=0, max_value=c_totales, value=min(12, c_totales), key="c_corr")
 
     st.sidebar.markdown("**Límites de Campos**")
     l_totales = st.sidebar.number_input("Total de Campos en Org:", min_value=1, value=15, key="l_tot")
-    l_correctos = st.sidebar.number_input("Campos con Límites Correctos/Activos:", min_value=0, max_value=l_totales, value=9, key="l_corr")
+    # Protegemos el value para que no supere a l_totales
+    l_correctos = st.sidebar.number_input("Campos con Límites Correctos/Activos:", min_value=0, max_value=l_totales, value=min(9, l_totales), key="l_corr")
 
     calidad_datos = {
         'Asignación de Variedad': (v_correctos / v_totales) * 100,
