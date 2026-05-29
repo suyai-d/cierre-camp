@@ -420,6 +420,7 @@ if activar_performance:
                     else:
                         st.caption("Sin datos de factor de carga.")
 
+
         st.markdown("---")
         st.header("2. Eficiencia de Operación y Tecnologías")
         st.markdown("### Comparativa de Tecnología de Guiado por Equipo")
