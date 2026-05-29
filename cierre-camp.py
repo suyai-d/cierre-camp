@@ -461,9 +461,15 @@ if activar_performance:
         df_guiado_plot = pd.DataFrame(datos_guiado)
         df_cosechadora_plot = pd.DataFrame(datos_cosechadora)
 
+# --- Gráfico 1: Comparativa de Tecnología de Guiado ---
         fig_guiado = px.bar(df_guiado_plot, x='Máquina', y='Porcentaje', color='Tecnología', barmode='group',
                             text=df_guiado_plot['Porcentaje'].apply(lambda x: f"{x:.1f}%" if x > 0 else ""),
                             color_discrete_sequence=['#367c2b', '#ffde00', '#204d19', '#9ccc65'])
+        
+        # Línea de objetivo al 80%
+        fig_guiado.add_hline(y=80, line_dash="dash", line_color="#d32f2f", 
+                             annotation_text="Objetivo: 80%", annotation_position="top left")
+        
         fig_guiado.update_layout(yaxis=dict(range=[0, 115]), height=400,
                                  legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"))
         st.plotly_chart(fig_guiado, use_container_width=True)
@@ -471,9 +477,15 @@ if activar_performance:
         st.markdown("---")
         st.markdown("### Comparativa de Tecnología de Cosecha por Equipo")
 
+        # --- Gráfico 2: Comparativa de Tecnología de Cosecha ---
         fig_cosechadora = px.bar(df_cosechadora_plot, x='Máquina', y='Porcentaje', color='Tecnología', barmode='group',
                                  text=df_cosechadora_plot['Porcentaje'].apply(lambda x: f"{x:.1f}%" if x > 0 else ""),
                                  color_discrete_sequence=['#1b5e20', '#2e7d32', '#4caf50', '#81c784', '#a5d6a7'])
+        
+        # Línea de objetivo al 60%
+        fig_cosechadora.add_hline(y=60, line_dash="dash", line_color="#d32f2f", 
+                                  annotation_text="Objetivo: 60%", annotation_position="top left")
+        
         fig_cosechadora.update_layout(yaxis=dict(range=[0, 115]), height=400,
                                       legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"))
         st.plotly_chart(fig_cosechadora, use_container_width=True)
