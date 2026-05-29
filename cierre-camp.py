@@ -612,7 +612,7 @@ if agregar_agronómico:
 
                 with col_c2:
                     # REEMPLAZO: CANTIDAD DE TONELADAS POR HORA QUE PROCESÓ CADA MÁQUINA
-                   col_prod = 'Productividad_th' if 'Productividad_th' in df_c.columns else 'Productividad'
+                    col_prod = 'Productividad_th' if 'Productividad_th' in df_c.columns else 'Productividad'
 
                     if col_prod in df_c.columns:
                         df_prod_valida = df_c[df_c[col_prod] > 0]
