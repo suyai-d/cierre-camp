@@ -467,8 +467,8 @@ if activar_performance:
                             color_discrete_sequence=['#367c2b', '#ffde00', '#204d19', '#9ccc65'])
         
         # Línea de objetivo al 80%
-        fig_guiado.add_hline(y=80, line_dash="dash", line_color="#d32f2f", 
-                             annotation_text="Objetivo: 80%", annotation_position="top left")
+        fig_guiado.add_hline(y=60, line_dash="dash", line_color="#d32f2f", 
+                             annotation_text="Objetivo: 60%", annotation_position="top left")
         
         fig_guiado.update_layout(yaxis=dict(range=[0, 115]), height=400,
                                  legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"))
@@ -483,8 +483,8 @@ if activar_performance:
                                  color_discrete_sequence=['#1b5e20', '#2e7d32', '#4caf50', '#81c784', '#a5d6a7'])
         
         # Línea de objetivo al 60%
-        fig_cosechadora.add_hline(y=60, line_dash="dash", line_color="#d32f2f", 
-                                  annotation_text="Objetivo: 60%", annotation_position="top left")
+        fig_cosechadora.add_hline(y=80, line_dash="dash", line_color="#d32f2f", 
+                                  annotation_text="Objetivo: 80%", annotation_position="top left")
         
         fig_cosechadora.update_layout(yaxis=dict(range=[0, 115]), height=400,
                                       legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"))
