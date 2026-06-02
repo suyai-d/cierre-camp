@@ -103,7 +103,6 @@ def registrar_evento_github(usuario, accion, cliente="N/A"):
 def cargar_organizaciones():
     try:
         df_orgs = pd.read_csv("Orgs CONCI.csv")
-        # Ordenamos alfabéticamente para facilitar la búsqueda
         df_orgs = df_orgs.sort_values(by="Organización")
         return df_orgs
     except Exception as e:
@@ -132,7 +131,7 @@ if not st.session_state.autenticado:
             st.rerun()
         else:
             st.error("❌ Usuario no autorizado. Verificá tu legajo.")
-    st.stop()  # Detiene la carga de la página aquí si no está autenticado
+    st.stop()
 
 # --- INTERFAZ DEL TABLERO AUTORIZADO ---
 st.markdown(
@@ -142,20 +141,21 @@ st.markdown(
 # --- SIDEBAR ---
 st.sidebar.header("Configuración del Informe")
 
-# --- CARGA DE RAZONES SOCIALES (CLIENTES CONCI) ---
-@st.cache_data
-def cargar_organizaciones():
-    try:
-        df_orgs = pd.read_csv("Orgs CONCI.csv")
-        # Ordenamos alfabéticamente para facilitar la búsqueda
-        df_orgs = df_orgs.sort_values(by="Organización")
-        return df_orgs
-    except Exception as e:
-        st.error(f"Error al cargar Orgs CONCI.csv: {e}")
-        return pd.DataFrame(columns=["Organización", "Org ID"])
+# --- SECCIÓN: SELECCIÓN DE RAZÓN SOCIAL ---
+st.sidebar.subheader("🏢 Cliente / Organización")
+opciones_select = ["Seleccione una Organización..."] + lista_organizaciones
+razon_social_seleccionada = st.sidebar.selectbox(
+    "Seleccionar Empresa de Conci:",
+    options=opciones_select,
+    index=0,
+    key="sel_razon_social"
+)
 
-df_conci_orgs = cargar_organizaciones()
-lista_organizaciones = df_conci_orgs["Organización"].tolist()
+if razon_social_seleccionada == "Seleccione una Organización...":
+    st.warning("⚠️ Por favor, seleccione una Razón Social en la barra lateral para desplegar los análisis.")
+    st.stop()
+
+st.sidebar.markdown("---")
 
 # --- SECCIÓN 1: PERFORMANCE ---
 st.sidebar.subheader("📊 1. Performance de Maquinaria")
@@ -208,22 +208,18 @@ if agregar_calidad:
 
     st.sidebar.markdown("**Asignación de Variedad**")
     v_totales = st.sidebar.number_input("Total de Mapas de Cosecha:", min_value=1, value=10, key="v_tot")
-    # Protegemos el value para que no supere a v_totales
     v_correctos = st.sidebar.number_input("Mapas con Variedad Cargada:", min_value=0, max_value=v_totales, value=min(8, v_totales), key="v_corr")
 
     st.sidebar.markdown("**Mapas Cargados Correctamente**")
     m_totales = st.sidebar.number_input("Total de Mapas del Período:", min_value=1, value=12, key="m_tot")
-    # Protegemos el value para que no supere a m_totales (evita el error que te apareció)
     m_correctos = st.sidebar.number_input("Mapas sin Errores/Superposiciones:", min_value=0, max_value=m_totales, value=min(11, m_totales), key="m_corr")
 
     st.sidebar.markdown("**Nombramiento de Campos**")
     c_totales = st.sidebar.number_input("Total de Campos Registrados:", min_value=1, value=15, key="c_tot")
-    # Protegemos el value para que no supere a c_totales
     c_correctos = st.sidebar.number_input("Campos con Nombre Correcto (sin duplicados):", min_value=0, max_value=c_totales, value=min(12, c_totales), key="c_corr")
 
     st.sidebar.markdown("**Límites de Campos**")
     l_totales = st.sidebar.number_input("Total de Campos en Org:", min_value=1, value=15, key="l_tot")
-    # Protegemos el value para que no supere a l_totales
     l_correctos = st.sidebar.number_input("Campos con Límites Correctos/Activos:", min_value=0, max_value=l_totales, value=min(9, l_totales), key="l_corr")
 
     calidad_datos = {
@@ -263,7 +259,6 @@ if agregar_agronómico:
 
             df_agro.columns = df_agro.columns.str.strip()
 
-            # --- HOMOLOGACIÓN INTELIGENTE DE COLUMNAS ---
             mapeo_columnas = {
                 'Velocidad': 'Velocidad de trabajo',
                 'Índice de combustible (área)': 'Consumo de combustible por unidad de superficie',
@@ -271,11 +266,9 @@ if agregar_agronómico:
             }
             df_agro = df_agro.rename(columns=mapeo_columnas)
 
-            # Limpieza de filas de control
             df_agro = df_agro[(df_agro['Nombre de máquina'] != 'Unidad') & (df_agro['Nombre de máquina'] != '---')]
             df_agro = df_agro.dropna(subset=['Nombre de máquina'])
 
-            # Forzamos conversión numérica de las columnas clave
             columnas_numericas = [
                 'Superficie cosechada', 'Rendimiento en seco', 'Rendimiento seco total',
                 'Velocidad de trabajo', 'Consumo de combustible por unidad de superficie',
@@ -285,7 +278,6 @@ if agregar_agronómico:
                 if col in df_agro.columns:
                     df_agro[col] = pd.to_numeric(df_agro[col], errors='coerce')
 
-            # Parsear la columna de fecha para la serie histórica
             if 'Primera cosecha' in df_agro.columns:
                 df_agro['Fecha_Formateada'] = pd.to_datetime(df_agro['Primera cosecha'], errors='coerce')
 
@@ -293,9 +285,7 @@ if agregar_agronómico:
             st.sidebar.error(f"Error al cargar el archivo agronómico: {e}")
 
 # --- CUERPO DEL INFORME ---
-# Portada de inicio full-width para la descarga en PDF
 st.image("portada.jpg", use_container_width=True)
-
 st.title("Cierre de Campaña")
 
 if df is not None and len(df) > 0 and activar_performance:
@@ -308,10 +298,7 @@ else:
 
 col_header1, col_header2 = st.columns(2)
 with col_header1:
-    if razon_social_seleccionada:
-        st.subheader(f"Cliente: {razon_social_seleccionada}")
-    else:
-        st.subheader("Cliente: _Razón Social no especificada_")
+    st.subheader(f"Cliente: {razon_social_seleccionada}")
 with col_header2:
     st.markdown(f"<p style='text-align: right; font-size: 1.2rem; font-weight: bold; color: #4caf50;'>📅 Período: {fecha_inicio} al {fecha_fin}</p>", unsafe_allow_html=True)
 
@@ -736,16 +723,10 @@ if agregar_agronómico:
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
 
-# Cuando se arma el diccionario o DataFrame para guardar en registro_actividad.csv:
+# --- BOTÓN DE EXPORTACIÓN Y LOGS ---
 
-# Extraemos el Org ID correspondiente a la empresa elegida
-org_id_actual = df_conci_orgs[df_conci_orgs["Organización"] == razon_social_seleccionada]["Org ID"].values[0]
-
-nueva_actividad = {
-    "Fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
-    "Organización": razon_social_seleccionada,
-    "Org ID": int(org_id_actual), # Por si querés registrar el ID numérico
-    # ... los demás campos que ya guardabas (v_correctos, m_correctos, etc.) ...
-}
-
-# Código para hacer el append al registro_actividad.csv que ya tenías programado...
+st.markdown("---")
+if st.button("Generar Reporte PDF", use_container_width=True):
+    # Aquí se dispara el registro automático en GitHub usando la Razón Social seleccionada
+    registrar_evento_github(st.session_state.usuario, "Exportó Reporte a PDF", cliente=razon_social_seleccionada)
+    st.success(f"✅ Evento registrado exitosamente para la organización: {razon_social_seleccionada}")
