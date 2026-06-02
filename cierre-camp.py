@@ -165,7 +165,7 @@ razon_social = st.sidebar.selectbox(
 )
 
 if razon_social and razon_social != "Seleccionar Cliente...":
-    st.info(f"📋 **Cliente:** {razon_social}  |  **Fecha:** {fecha_control.strftime('%d/%m/%Y')}")
+    st.info(f"📋 **Cliente:** {razon_social}")
 
 st.sidebar.markdown("---")
 
