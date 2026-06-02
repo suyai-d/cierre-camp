@@ -308,7 +308,7 @@ else:
 
 col_header1, col_header2 = st.columns(2)
 with col_header1:
-    if razon_social:
+    if razon_social_seleccionada:
         st.subheader(f"Cliente: {razon_social_seleccionada}")
     else:
         st.subheader("Cliente: _Razón Social no especificada_")
