@@ -98,6 +98,21 @@ def registrar_evento_github(usuario, accion, cliente="N/A"):
     except Exception as e:
         st.error(f"💥 Error crítico al intentar escribir log: {str(e)}")
 
+# --- CARGA DE RAZONES SOCIALES (CLIENTES CONCI) ---
+@st.cache_data
+def cargar_organizaciones():
+    try:
+        df_orgs = pd.read_csv("Orgs CONCI.csv")
+        # Ordenamos alfabéticamente para facilitar la búsqueda
+        df_orgs = df_orgs.sort_values(by="Organización")
+        return df_orgs
+    except Exception as e:
+        st.error(f"Error al cargar Orgs CONCI.csv: {e}")
+        return pd.DataFrame(columns=["Organización", "Org ID"])
+
+df_conci_orgs = cargar_organizaciones()
+lista_organizaciones = df_conci_orgs["Organización"].tolist()
+
 
 # --- FLUJO DE AUTENTICACIÓN ---
 if "autenticado" not in st.session_state:
@@ -127,9 +142,20 @@ st.markdown(
 # --- SIDEBAR ---
 st.sidebar.header("Configuración del Informe")
 
-# Razón Social
-razon_social = st.sidebar.text_input("Razón Social del Cliente", placeholder="Ej: H&H Outfitters SA")
-st.sidebar.markdown("---")
+# --- CARGA DE RAZONES SOCIALES (CLIENTES CONCI) ---
+@st.cache_data
+def cargar_organizaciones():
+    try:
+        df_orgs = pd.read_csv("Orgs CONCI.csv")
+        # Ordenamos alfabéticamente para facilitar la búsqueda
+        df_orgs = df_orgs.sort_values(by="Organización")
+        return df_orgs
+    except Exception as e:
+        st.error(f"Error al cargar Orgs CONCI.csv: {e}")
+        return pd.DataFrame(columns=["Organización", "Org ID"])
+
+df_conci_orgs = cargar_organizaciones()
+lista_organizaciones = df_conci_orgs["Organización"].tolist()
 
 # --- SECCIÓN 1: PERFORMANCE ---
 st.sidebar.subheader("📊 1. Performance de Maquinaria")
@@ -710,9 +736,16 @@ if agregar_agronómico:
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
 
-# Botón para simular la generación de PDF y disparar el log automático
-if st.button("Generar Reporte PDF", use_container_width=True):
-    # Aquí irá tu lógica para renderizar/descargar el PDF, pero el registro en GitHub ya se ejecuta de inmediato:
-    cliente_informe = razon_social.strip() if razon_social else "No especificado"
-    registrar_evento_github(st.session_state.usuario, "Exportó Reporte Cierre Cosecha a PDF", cliente=cliente_informe)
-    st.success(f"🎉 ¡Reporte registrado con éxito para {cliente_informe}!")
+# Cuando se arma el diccionario o DataFrame para guardar en registro_actividad.csv:
+
+# Extraemos el Org ID correspondiente a la empresa elegida
+org_id_actual = df_conci_orgs[df_conci_orgs["Organización"] == razon_social_seleccionada]["Org ID"].values[0]
+
+nueva_actividad = {
+    "Fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "Organización": razon_social_seleccionada,
+    "Org ID": int(org_id_actual), # Por si querés registrar el ID numérico
+    # ... los demás campos que ya guardabas (v_correctos, m_correctos, etc.) ...
+}
+
+# Código para hacer el append al registro_actividad.csv que ya tenías programado...
