@@ -518,6 +518,7 @@ if activar_performance:
                     else:
                         st.caption("Sin datos de factor de carga.")
 
+            # Colocado fuera del else y del bloque de arriba, alineado con el flujo de la sección 1
             with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
                 comentarios = st.text_area(
                     label="Escribí acá tus observaciones para el informe:",
