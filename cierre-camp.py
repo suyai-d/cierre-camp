@@ -235,9 +235,23 @@ if activar_performance:
 
             for col in columnas_tecnologia:
                 if col in df.columns:
-                    # Convertimos a string, reemplazamos la coma por punto si existe, y pasamos a numérico
-                    df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
+                    # 1. Convertimos a string y limpiamos espacios o símbolos de porcentaje pegados
+                    df[col] = df[col].astype(str).str.replace('%', '', regex=False).str.strip()
+                    
+                    # 2. Reemplazamos la coma por punto si existe
+                    df[col] = df[col].str.replace(',', '.', regex=False)
+                    
+                    # 3. Pasamos a numérico
                     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                    
+                    # 4. CONDICIÓN DE CONTROL: Si el valor quedó inflado por error de lectura decimal 
+                    # pero en el archivo original era menor a 1 (ej: vino como 0.394 y se malinterpretó en el df)
+                    # Nota: Como la otra máquina es 49.7%, cualquier valor que por error de lectura sea interpretado al revés se ajusta aquí:
+                    # Si tu gráfico multiplica por 100 después, un valor de 0.394 pasará a ser 39.4. 
+                    # Forzamos a que si el valor real de Machine Sync vino expresado de forma diferente, se acomode:
+                    if col == 'John Deere Machine Sync Vehículo guía activo (%)':
+                        # Aplicamos una máscara por fila para corregir la máquina que tiene el valor bajito si es necesario:
+                        df[col] = df[col].apply(lambda x: x/100 if x > 100 else x)
 
             if 'Máquina' in df.columns:
                 df = df.dropna(subset=['Máquina'])
