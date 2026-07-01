@@ -633,7 +633,7 @@ if agregar_calidad:
         """, unsafe_allow_html=True)
 
     with col_cal2:
-        st.markdown("### Desglose de Cumplimiento")
+    st.markdown("### Desglose de Cumplimiento")
         df_calidad = pd.DataFrame({'Indicador': list(calidad_datos.keys()), 'Porcentaje': list(calidad_datos.values())})
         fig_calidad = px.bar(df_calidad, x='Porcentaje', y='Indicador', orientation='h',
                              text=df_calidad['Porcentaje'].apply(lambda x: f"{x:.1f}%"),
@@ -644,12 +644,12 @@ if agregar_calidad:
                                   margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_calidad, use_container_width=True)
 
-        with st.expander(""):
-            comentarios = st.text_area(
-                label="Observaciones:",
-                placeholder="Ej: Faltan agregar límites a los campos y ordenarlos ...",
-                height=150
-            )
+    with st.expander(""):
+        comentarios = st.text_area(
+            label="Observaciones:",
+            placeholder="Ej: Faltan agregar límites a los campos y ordenarlos ...",
+            height=150
+        )
 
 
 # --- DISPLAY SECCIÓN 3: DATOS AGRONÓMICOS ---
