@@ -192,6 +192,35 @@ if activar_performance:
 
             df.columns = df.columns.str.strip()
 
+            # --- HOMOLOGACIÓN DE NUEVO FORMATO DE PERFORMANCE ---
+            mapeo_performance = {
+                'Factor de carga prom del motor Trabajo': 'Factor de carga prom del motor En funcionamiento (%)',
+                'Combustible consumido Período': 'Combustible consumido Período', # Se mantiene igual
+                'Emisiones de combustible Período': 'Emisiones de combustible Período (kg CO2e)',
+                'Combustible consumido Ralentí': 'Combustible consumido Ralentí (l)',
+                'Combustible consumido Trabajo': 'Combustible consumido Trabajo (l)',
+                'Combustible consumido Transporte': 'Combustible consumido Transporte (l)',
+                'Horas de trabajo del motor Período': 'Horas de trabajo del motor Período (h)',
+                'Horas de trabajo del motor Vida útil': 'Horas de trabajo del motor Vida útil (h)',
+                'Tiempo en soja': 'Tiempo en soja (h)',
+                'Tiempo en maíz': 'Tiempo en maíz (h)',
+                'Active Terrain Adjustment™ Activado': 'Active Terrain Adjustment™ Activado (%)',
+                'ActiveYield™ Activado': 'ActiveYield™ Activado (%)',
+                'Harvest Smart Activado': 'Harvest Smart Activado (%)',
+                'Auto Maintain Activado': 'Auto Maintain Activado (%)',
+                'AutoTrac™ Activo': 'AutoTrac™ Activo (%)',
+                'AutoPath™ Activo': 'AutoPath™ Activo (%)',
+                'John Deere Machine Sync Vehículo guía activo': 'John Deere Machine Sync Vehículo guía activo (%)',
+                'Automatización de maniobras AutoTrac™ Activo': 'Automatización de maniobras AutoTrac™ Activo (%)',
+                'Automatización de la velocidad de avance Activo': 'Automatización de la velocidad de avance Activo (%)',
+                'Automatización de ajustes de cosecha Activo': 'Automatización de los ajustes de cosecha Activo (%)'
+            }
+            
+            # Nota: El archivo exportado trae un espacio al final en 'Tiempo en soja ' y 'Tiempo en maíz ', 
+            # limpiamos los espacios extras de las columnas antes del renombre definitivo.
+            df.columns = df.columns.str.strip()
+            df = df.rename(columns=mapeo_performance)
+
             if 'Máquina' in df.columns:
                 df = df.dropna(subset=['Máquina'])
                 opciones_maquinas = df['Máquina'].unique().tolist()
