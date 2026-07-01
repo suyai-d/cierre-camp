@@ -518,12 +518,12 @@ if activar_performance:
                     else:
                         st.caption("Sin datos de factor de carga.")
 
-        with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
-    comentarios = st.text_area(
-        label="Escribí acá tus observaciones para el informe:",
-        placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
-        height=150
-    )
+            with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
+                comentarios = st.text_area(
+                label="Escribí acá tus observaciones para el informe:",
+                placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
+                height=150
+                )
 
         st.markdown("---")
         st.header("2. Eficiencia de Operación y Tecnologías")
