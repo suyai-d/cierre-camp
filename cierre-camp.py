@@ -518,15 +518,6 @@ if activar_performance:
                     else:
                         st.caption("Sin datos de factor de carga.")
 
-            # Un único expander general fuera del bucle de las máquinas
-            with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
-                comentarios = st.text_area(
-                    label="Escribí acá tus observaciones generales de performance para el informe:",
-                    placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
-                    height=150,
-                    key="comentarios_performance_general"  # Un identificador único fijo
-                )
-
         st.markdown("---")
         st.header("2. Eficiencia de Operación y Tecnologías")
         st.markdown("### Comparativa de Tecnología de Guiado por Equipo")
