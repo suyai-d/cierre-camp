@@ -727,7 +727,7 @@ if agregar_agronómico:
                                           height=300, margin=dict(t=40, b=10, l=10, r=10))
                     st.plotly_chart(fig_vel, use_container_width=True, key=f"vel_maq_{cultivo}")
 
-                # --- NUEVO: EFICIENCIA (L/ha) VS PRODUCTIVIDAD (tn/h) ---
+# --- NUEVO: EFICIENCIA (L/ha) VS PRODUCTIVIDAD (tn/h) ---
                 st.markdown("#### 📊 Capacidad y Eficiencia de los Equipos")
                 col_c1, col_c2 = st.columns(2)
 
@@ -777,12 +777,14 @@ if agregar_agronómico:
                     else:
                         st.warning("Columna de Productividad (t/h) no encontrada en el archivo.")
 
-                with st.expander(""):
+                # >>> CORRECCIÓN DEL EXPANDER Y TEXT_AREA <<<
+                with st.expander(f"📝 Agregar Observaciones de Capacidad y Eficiencia ({cultivo.capitalize()})"):
                     comentarios = st.text_area(
-                            label="Observaciones:",
-                            placeholder="Ej: El uso del autotrac está por debajo del objetivo ...",
-                            height=150
-                    )   
+                        label="Escribí tus conclusiones acá:",
+                        placeholder="Ej: Se observa una relación lógica entre una mayor velocidad y variaciones en el consumo...",
+                        height=150,
+                        key=f"comentarios_capacidad_{cultivo}"  # Clave única por cultivo para evitar que falle
+                    )
 
                 # --- 2. SERIE HISTÓRICA DE COSECHA ---
                 st.markdown("#### 📈 Evolución y Ritmo de Cosecha")
