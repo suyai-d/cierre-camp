@@ -221,6 +221,24 @@ if activar_performance:
             df.columns = df.columns.str.strip()
             df = df.rename(columns=mapeo_performance)
 
+            # --- CORRECCIÓN DE FORMATOS NUMÉRICOS (Comas por Puntos) ---
+            # Identificamos las columnas de tecnología para limpiar posibles errores de coma
+            columnas_tecnologia = [
+                'Active Terrain Adjustment™ Activado (%)', 'ActiveYield™ Activado (%)',
+                'Harvest Smart Activado (%)', 'Auto Maintain Activado (%)',
+                'AutoTrac™ Activo (%)', 'AutoPath™ Activo (%)',
+                'John Deere Machine Sync Vehículo guía activo (%)',
+                'Automatización de maniobras AutoTrac™ Activo (%)',
+                'Automatización de la velocidad de avance Activo (%)',
+                'Automatización de los ajustes de cosecha Activo (%)'
+            ]
+
+            for col in columnas_tecnologia:
+                if col in df.columns:
+                    # Convertimos a string, reemplazamos la coma por punto si existe, y pasamos a numérico
+                    df[col] = df[col].astype(str).str.replace(',', '.', regex=False)
+                    df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
             if 'Máquina' in df.columns:
                 df = df.dropna(subset=['Máquina'])
                 opciones_maquinas = df['Máquina'].unique().tolist()
