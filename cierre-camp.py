@@ -602,6 +602,12 @@ if activar_performance:
                                       legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"))
         st.plotly_chart(fig_cosechadora, use_container_width=True)
 
+        with st.expander(""):
+            comentarios = st.text_area(
+                label="Observaciones:",
+                placeholder="Ej: La tecnología de avance tiene un buen % de uso ...",
+                height=150
+
 # --- DISPLAY SECCIÓN 2: CALIDAD DE REGISTRO ---
 if agregar_calidad:
     st.markdown("---")
