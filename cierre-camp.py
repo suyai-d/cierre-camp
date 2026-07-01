@@ -519,6 +519,14 @@ if activar_performance:
                         st.caption("Sin datos de factor de carga.")
 
         st.markdown("---")
+
+        # Seccion desplegable simple
+with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
+    comentarios = st.text_area(
+        label="Escribí acá tus observaciones para el informe:",
+        placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
+        height=150
+    )        
         st.header("2. Eficiencia de Operación y Tecnologías")
         st.markdown("### Comparativa de Tecnología de Guiado por Equipo")
 
