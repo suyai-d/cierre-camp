@@ -520,9 +520,9 @@ if activar_performance:
 
             with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
                 comentarios = st.text_area(
-                label="Escribí acá tus observaciones para el informe:",
-                placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
-                height=150
+                    label="Escribí acá tus observaciones para el informe:",
+                    placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
+                    height=150
                 )
 
         st.markdown("---")
