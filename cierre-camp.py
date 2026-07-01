@@ -633,7 +633,7 @@ if agregar_calidad:
         """, unsafe_allow_html=True)
 
     with col_cal2:
-    st.markdown("### Desglose de Cumplimiento")
+        st.markdown("### Desglose de Cumplimiento")
         df_calidad = pd.DataFrame({'Indicador': list(calidad_datos.keys()), 'Porcentaje': list(calidad_datos.values())})
         fig_calidad = px.bar(df_calidad, x='Porcentaje', y='Indicador', orientation='h',
                              text=df_calidad['Porcentaje'].apply(lambda x: f"{x:.1f}%"),
