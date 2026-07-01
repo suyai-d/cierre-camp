@@ -778,9 +778,9 @@ if agregar_agronómico:
                         st.warning("Columna de Productividad (t/h) no encontrada en el archivo.")
 
                 # >>> CORRECCIÓN DEL EXPANDER Y TEXT_AREA <<<
-                with st.expander(f"📝 Agregar Observaciones de Capacidad y Eficiencia ({cultivo.capitalize()})"):
+                with st.expander(f""):
                     comentarios = st.text_area(
-                        label="Escribí tus conclusiones acá:",
+                        label="Comentarios:",
                         placeholder="Ej: Se observa una relación lógica entre una mayor velocidad y variaciones en el consumo...",
                         height=150,
                         key=f"comentarios_capacidad_{cultivo}"  # Clave única por cultivo para evitar que falle
