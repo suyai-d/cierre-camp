@@ -644,6 +644,16 @@ if agregar_calidad:
                                   margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_calidad, use_container_width=True)
 
+    # >>> NUEVO COMPONENTE DE COMENTARIOS AGREGADO ACÁ <<<
+    # Asegúrate de mantener la misma indentación de 4 espacios que las columnas de arriba
+    with st.expander(""):
+        comentarios_calidad = st.text_area(
+            label="Observaciones:",
+            placeholder="Ej: se detectan campos sin nombrs correctos ni límites ...",
+            height=150,
+            key="comentarios_calidad_datos_general"  # Clave única para evitar errores de ID
+        )
+
 # --- DISPLAY SECCIÓN 3: DATOS AGRONÓMICOS ---
 if agregar_agronómico:
     st.markdown("---")
