@@ -777,6 +777,13 @@ if agregar_agronómico:
                     else:
                         st.warning("Columna de Productividad (t/h) no encontrada en el archivo.")
 
+                with st.expander(""):
+                    comentarios = st.text_area(
+                            label="Observaciones:",
+                            placeholder="Ej: El uso del autotrac está por debajo del objetivo ...",
+                            height=150
+                    )   
+
                 # --- 2. SERIE HISTÓRICA DE COSECHA ---
                 st.markdown("#### 📈 Evolución y Ritmo de Cosecha")
                 if 'Fecha_Formateada' in df_c.columns and df_c['Fecha_Formateada'].notna().any():
