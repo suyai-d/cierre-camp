@@ -656,7 +656,6 @@ if agregar_calidad:
 
 # --- DISPLAY SECCIÓN 3: DATOS AGRONÓMICOS ---
 if agregar_agronómico:
-    st.markdown("---")
     num_seccion = "4" if agregar_calidad else "3"
     st.header(f"{num_seccion}. Análisis de Datos Agronómicos")
 
@@ -840,7 +839,13 @@ if agregar_agronómico:
                 else:
                     st.info("Sin datos de rendimiento para el Boxplot.")
 
-                st.markdown("---")  # Separador estético entre cultivos
+                with st.expander(f""):
+                    comentarios = st.text_area(
+                        label="Comentarios:",
+                        placeholder="Ej: La variedad que mejor se comportó fue...",
+                        height=150,
+                        key=f"comentarios_capacidad_{cultivo}"  # Clave única por cultivo para evitar que falle
+                    )
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
 
