@@ -844,7 +844,6 @@ if agregar_agronómico:
                         label="Comentarios:",
                         placeholder="Ej: La variedad que mejor se comportó fue...",
                         height=150,
-                        key=f"comentarios_capacidad_{cultivo}"  # Clave única por cultivo para evitar que falle
                     )
 
 # --- SECCIÓN FINALES Y ACCIONES DE EXPORTACIÓN ---
