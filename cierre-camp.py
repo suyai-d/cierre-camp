@@ -518,12 +518,10 @@ if activar_performance:
                     else:
                         st.caption("Sin datos de factor de carga.")
 
-        st.markdown("---")
-
         # Seccion desplegable simple
-        with st.expander("📝 Agregar Comentarios / Notas de la Campaña"):
+        with st.expander(""):
             comentarios = st.text_area(
-                label="Escribí acá tus observaciones para el informe:",
+                label="Observaciones:",
                 placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
                 height=150
             )        
