@@ -522,7 +522,7 @@ if activar_performance:
         with st.expander(""):
             comentarios = st.text_area(
                 label="Observaciones:",
-                placeholder="Ej: El uso de tecnología en esta campaña fue óptimo...",
+                placeholder="Ej: El tiempo en ralentí es elevado ...",
                 height=150
             )        
         st.header("2. Eficiencia de Operación y Tecnologías")
@@ -580,7 +580,13 @@ if activar_performance:
                                  legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"))
         st.plotly_chart(fig_guiado, use_container_width=True)
 
-        st.markdown("---")
+        # Seccion desplegable simple
+        with st.expander(""):
+            comentarios = st.text_area(
+                label="Observaciones:",
+                placeholder="Ej: El uso del autotrac está por debajo del objetivo ...",
+                height=150
+            )       
         st.markdown("### Comparativa de Tecnología de Cosecha por Equipo")
 
         # --- Gráfico 2: Comparativa de Tecnología de Cosecha ---
