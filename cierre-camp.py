@@ -611,7 +611,6 @@ if activar_performance:
 
 # --- DISPLAY SECCIÓN 2: CALIDAD DE REGISTRO ---
 if agregar_calidad:
-    st.markdown("---")
     st.header("3. Calidad de Registro y Limpieza de Datos")
 
     calidad_general = sum(calidad_datos.values()) / len(calidad_datos)
@@ -644,6 +643,14 @@ if agregar_calidad:
         fig_calidad.update_layout(xaxis=dict(range=[0, 105]), height=220, coloraxis_showscale=False,
                                   margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_calidad, use_container_width=True)
+
+        with st.expander(""):
+            comentarios = st.text_area(
+                label="Observaciones:",
+                placeholder="Ej: Faltan agregar límites a los campos y ordenarlos ...",
+                height=150
+            )
+
 
 # --- DISPLAY SECCIÓN 3: DATOS AGRONÓMICOS ---
 if agregar_agronómico:
