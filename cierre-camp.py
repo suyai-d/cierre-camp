@@ -644,6 +644,12 @@ if agregar_calidad:
                                   margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_calidad, use_container_width=True)
 
+with st.expander(""):
+    comentarios = st.text_area(
+         label="Observaciones:",
+         placeholder="Ej: La tecnología de avance tiene un buen % de uso ...",
+         height=150
+     )
 
 # --- DISPLAY SECCIÓN 3: DATOS AGRONÓMICOS ---
 if agregar_agronómico:
