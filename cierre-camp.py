@@ -607,6 +607,7 @@ if activar_performance:
                 label="Observaciones:",
                 placeholder="Ej: La tecnología de avance tiene un buen % de uso ...",
                 height=150
+            )
 
 # --- DISPLAY SECCIÓN 2: CALIDAD DE REGISTRO ---
 if agregar_calidad:
