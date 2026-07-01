@@ -525,7 +525,7 @@ if activar_performance:
 
         def normalizar_porcentaje(val):
             if pd.isna(val): return 0.0
-            return val * 100 if val <= 1.0 else val
+            return val 
 
 
         datos_guiado = []
